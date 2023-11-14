@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -43,7 +45,9 @@ namespace Lab4.ViewModels
             }
         }
 
-        public Batch<object> CurrentBatch { get; set; } = new Batch<object>();
+        public Batch<object> CurrentBatch1 { get; set; } = new Batch<object>();
+        public Batch<object> CurrentBatch2 { get; set; } = new Batch<object>();
+        public ObservableCollection<object> MergeCollection { get; set; } = new ObservableCollection<object>();
         
         public RelayCommand OpenFileCommand { get; set; }
         public RelayCommand SortFileCommand { get; set; }
@@ -54,12 +58,17 @@ namespace Lab4.ViewModels
             SortFileCommand = new RelayCommand(SortFile);
         }
 
-        private void SortFile()
+        private async void SortFile()
         {
-            Sorts.InsertionSort(CurrentBatch);
+            Task<int> t1 = Sorts.InsertionSort(CurrentBatch1);
+            Task<int> t2 = Sorts.InsertionSort(CurrentBatch2);
+            var res = await Task.WhenAll(t1, t2);
+
+
         }
         private void ReadFile()
         {
+            int batch_size = 4;
             try
             {
                 using var reader = new StreamReader(CurrentFile.FullName);
@@ -67,13 +76,27 @@ namespace Lab4.ViewModels
                 if (!csvReader.Read())
                     return;
 
-                CurrentBatch.Data.Clear();
+                CurrentBatch1.Clear();
+                CurrentBatch2.Clear();
 
                 bool isEOF;
                 var csvType = GetType(csvReader);
 
-                while ((isEOF = csvReader.Read()) is not false)
-                    CurrentBatch.Data.Add(CreateObjectRecord(csvType, csvReader.GetRecord<dynamic>()));
+                for(var i = 0; i <= batch_size; i++)
+                {
+                    if((isEOF = csvReader.Read()) is not false)
+                    {
+                        CurrentBatch1.Data.Add(CreateObjectRecord(csvType, csvReader.GetRecord<dynamic>()));
+                    }
+                }
+
+                for (var i = 0; i <= batch_size; i++)
+                {
+                    if ((isEOF = csvReader.Read()) is not false)
+                    {
+                        CurrentBatch2.Data.Add(CreateObjectRecord(csvType, csvReader.GetRecord<dynamic>()));
+                    }
+                }
             }
             catch(Exception ex)
             {

@@ -13,12 +13,24 @@
     <Window.Resources>
         <vm:StringFileInfoConverter x:Key="SFIConverter"/>
     </Window.Resources>
-    <StackPanel>
-        <TextBox Text="{Binding CurrentFile, ValidatesOnExceptions=True, 
+    <ScrollViewer>
+        <StackPanel>
+            <TextBox Text="{Binding CurrentFile, ValidatesOnExceptions=True, 
             UpdateSourceTrigger=PropertyChanged, Converter={StaticResource SFIConverter}}"/>
-        <Button Content="Open file" Command="{Binding OpenFileCommand}"/>
-        <Button Content="Sort file" Command="{Binding SortFileCommand}"/>
-        <DataGrid ItemsSource="{Binding CurrentBatch.Data}"/>
-        <DataGrid ItemsSource="{Binding CurrentBatch.Log}" />
-    </StackPanel>
+            <Button Content="Open file" Command="{Binding OpenFileCommand}"/>
+            <Button Content="Sort file" Command="{Binding SortFileCommand}"/>
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <DataGrid ItemsSource="{Binding CurrentBatch1.Data}"/>
+                    <DataGrid ItemsSource="{Binding CurrentBatch1.Log}" />
+                </StackPanel>
+            </StackPanel>
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <DataGrid ItemsSource="{Binding CurrentBatch2.Data}"/>
+                    <DataGrid ItemsSource="{Binding CurrentBatch2.Log}" />
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
 </Window>

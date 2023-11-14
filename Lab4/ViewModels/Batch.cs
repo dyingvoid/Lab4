@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.ObjectModel;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Lab4.Models;
 
@@ -36,8 +37,16 @@ namespace Lab4.ViewModels
 
         public bool IsBigger(int i1, int i2, string property, Type type, out LogRecord record)
         {
-            var property1 = (IComparable)GetProperty(i1, property, type);
-            var property2 = (IComparable)GetProperty(i2, property, type);
+            IComparable property1 = null;
+            IComparable property2 = null;
+            try
+            {
+                property1 = (IComparable)GetProperty(i1, property, type);
+                property2 = (IComparable)GetProperty(i2, property, type);
+            } catch (Exception ex)
+            {
+                MessageBox.Show("Check selected column of csv file. Wrong type.");
+            }
 
             record = new LogRecord() { RowIndex1 = i1, RowIndex2 = i2 };
             Log.Add(record);
@@ -62,6 +71,12 @@ namespace Lab4.ViewModels
                 record.GetType()
                 .GetProperty(property)
                 .GetValue(record, null), type);
+        }
+
+        public void Clear()
+        {
+            Data.Clear();
+            Log.Clear();
         }
     }
 }
