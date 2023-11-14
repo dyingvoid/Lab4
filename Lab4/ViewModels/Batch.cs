@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Globalization;
+using System.IO;
+using System.Security.Policy;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CsvHelper;
 using Lab4.Models;
 
 namespace Lab4.ViewModels
@@ -10,7 +14,8 @@ namespace Lab4.ViewModels
     {
         public ObservableCollection<T> Data { get; set; }
         public ObservableCollection<Record> Log { get; set; }
-        public double Delay { get; set; }
+        public string FullPath { get; set; }
+
 
         public Batch()
         {
@@ -87,6 +92,30 @@ namespace Lab4.ViewModels
                 obj.GetType()
                 .GetProperty(property)
                 .GetValue(obj, null), type);
+        }
+
+        public Batch<T>[] Split()
+        {
+            var batches = new Batch<T>[] { new Batch<T>(), new Batch<T>() };
+            int mid = Data.Count / 2;
+
+            for(var i = 0; i < mid; i++)
+                batches[0].Data.Add(Data[i]);
+
+            for(var i = mid; i < Data.Count; i++)
+                batches[1].Data.Add(Data[i]);
+
+            return batches;
+        }
+
+        public void ToFile()
+        {
+            using var fStream = File.Create(FullPath);
+            using var writer = new StreamWriter(fStream);
+            using var csvWriter = new CsvWriter(writer, CultureInfo.InvariantCulture);
+
+            csvWriter.WriteRecords(Data);
+            Clear();
         }
     }
 }

@@ -1,6 +1,11 @@
 ﻿using System.Threading.Tasks;
 using Lab4.ViewModels;
 using Lab4.Models;
+using System.Windows.Documents;
+using System.Collections.Generic;
+using CsvHelper;
+using System.IO;
+using System.Globalization;
 
 namespace Lab4.Models
 {
@@ -49,6 +54,24 @@ namespace Lab4.Models
             return 1;
         }
 
+        public static void GreatMerge(List<string> pathes)
+        {
+            var readers = OpenStreams(pathes);
+
+        }
+
+        private static List<CsvReader> OpenStreams(List<string> pathes)
+        {
+            var readers = new List<CsvReader>();
+            foreach (string path in pathes)
+            {
+                var reader = new StreamReader(path);
+                readers.Add(new CsvReader(reader, CultureInfo.InvariantCulture));
+            }
+
+            return readers;
+        }
+
         public static async Task<int> InsertionSort(Batch<object> batch)
         {
             for (int i = 1; i < batch.Data.Count; i++)
@@ -59,8 +82,9 @@ namespace Lab4.Models
                 {
                     batch.Swap(j + 1, j, record);
                     j--;
-                    await Task.Delay(100);
+                    await Task.Delay(300);
                 }
+                await Task.Delay(200);
             }
 
             return 1;
