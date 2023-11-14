@@ -47,7 +47,7 @@ namespace Lab4.ViewModels
 
         public Batch<object> CurrentBatch1 { get; set; } = new Batch<object>();
         public Batch<object> CurrentBatch2 { get; set; } = new Batch<object>();
-        public ObservableCollection<object> MergeCollection { get; set; } = new ObservableCollection<object>();
+        public Batch<object> MergedBatch { get; set; } = new Batch<object>();
         
         public RelayCommand OpenFileCommand { get; set; }
         public RelayCommand SortFileCommand { get; set; }
@@ -64,7 +64,7 @@ namespace Lab4.ViewModels
             Task<int> t2 = Sorts.InsertionSort(CurrentBatch2);
             var res = await Task.WhenAll(t1, t2);
 
-
+            Sorts.Merge(CurrentBatch1, CurrentBatch2, MergedBatch);
         }
         private void ReadFile()
         {

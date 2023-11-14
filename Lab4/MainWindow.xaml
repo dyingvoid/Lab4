@@ -31,6 +31,10 @@
                     <DataGrid ItemsSource="{Binding CurrentBatch2.Log}" />
                 </StackPanel>
             </StackPanel>
+            <StackPanel>
+                <DataGrid ItemsSource="{Binding MergedBatch.Data}"/>
+                <DataGrid ItemsSource="{Binding MergedBatch.Log}"/>
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </Window>
