@@ -17,6 +17,8 @@
         <TextBox Text="{Binding CurrentFile, ValidatesOnExceptions=True, 
             UpdateSourceTrigger=PropertyChanged, Converter={StaticResource SFIConverter}}"/>
         <Button Content="Open file" Command="{Binding OpenFileCommand}"/>
+        <Button Content="Sort file" Command="{Binding SortFileCommand}"/>
         <DataGrid ItemsSource="{Binding CurrentBatch.Data}"/>
+        <DataGrid ItemsSource="{Binding CurrentBatch.Log}" />
     </StackPanel>
 </Window>

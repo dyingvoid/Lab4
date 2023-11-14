@@ -46,10 +46,17 @@ namespace Lab4.ViewModels
         public Batch<object> CurrentBatch { get; set; } = new Batch<object>();
         
         public RelayCommand OpenFileCommand { get; set; }
+        public RelayCommand SortFileCommand { get; set; }
 
         public Reader()
         {
             OpenFileCommand = new RelayCommand(ReadFile, () => CanOpenFile);
+            SortFileCommand = new RelayCommand(SortFile);
+        }
+
+        private void SortFile()
+        {
+            Sorts.InsertionSort(CurrentBatch);
         }
         private void ReadFile()
         {
