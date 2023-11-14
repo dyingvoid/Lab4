@@ -11,7 +11,7 @@ namespace Lab4.Models
             
         }
 
-        public static async void Merge(Batch<object> batch1, Batch<object> batch2, Batch<object> mergeBatch)
+        public static async Task<int> Merge(Batch<object> batch1, Batch<object> batch2, Batch<object> mergeBatch)
         {
             var i = 0;
             var j = 0;
@@ -43,8 +43,10 @@ namespace Lab4.Models
                     i += 1;
                 }
                 k++;
-                await Task.Delay(100);
+                await Task.Delay(200);
             }
+
+            return 1;
         }
 
         public static async Task<int> InsertionSort(Batch<object> batch)
@@ -57,7 +59,7 @@ namespace Lab4.Models
                 {
                     batch.Swap(j + 1, j, record);
                     j--;
-                    await Task.Delay(50);
+                    await Task.Delay(100);
                 }
             }
 

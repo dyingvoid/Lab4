@@ -18,22 +18,6 @@ namespace Lab4.ViewModels
             Log = new ObservableCollection<Record>();
         }
 
-        public void CompareSwapElements(int i1, int i2, string property, Type asType)
-        {
-            var property1 = (IComparable)GetProperty(i1, property, asType);
-            var property2 = (IComparable)GetProperty(i2, property, asType);
-
-            Record logRecord = new Record() { RowIndex1 = i1, RowIndex2 = i2 };
-
-            if(property1.CompareTo(property2) == 1)
-            {
-                (Data[i2], Data[i1]) = (Data[i1], Data[i2]);
-                logRecord.Swapped = true;
-            }
-
-            Log.Add(logRecord);
-        }
-
         public bool IsBigger(int i1, int i2, string property, Type type, out Record record)
         {
             IComparable property1 = null;

@@ -65,37 +65,66 @@ namespace Lab4.ViewModels
             var res = await Task.WhenAll(t1, t2);
 
             Sorts.Merge(CurrentBatch1, CurrentBatch2, MergedBatch);
+
         }
-        private void ReadFile()
+        private async void ReadFile()
         {
-            int batch_size = 4;
             try
             {
-                using var reader = new StreamReader(CurrentFile.FullName);
-                using var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture);
-                if (!csvReader.Read())
-                    return;
+                int batch_size = 1;
 
-                CurrentBatch1.Clear();
-                CurrentBatch2.Clear();
-
-                bool isEOF;
-                var csvType = GetType(csvReader);
-
-                for(var i = 0; i <= batch_size; i++)
+                while (true)
                 {
-                    if((isEOF = csvReader.Read()) is not false)
-                    {
-                        CurrentBatch1.Data.Add(CreateObjectRecord(csvType, csvReader.GetRecord<dynamic>()));
-                    }
-                }
+                    using var reader = new StreamReader(CurrentFile.FullName);
+                    using var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture);
+                    if (!csvReader.Read())
+                        return;
 
-                for (var i = 0; i <= batch_size; i++)
-                {
-                    if ((isEOF = csvReader.Read()) is not false)
+                    CurrentBatch1.Clear();
+                    CurrentBatch2.Clear();
+                    MergedBatch.Clear();
+
+                    bool isEOF = false;
+                    var csvType = GetType(csvReader);
+
+                    CurrentBatch1.Data.Add(CreateObjectRecord(csvType, csvReader.GetRecord<dynamic>()));
+                    for (var i = 0; i < batch_size; i++)
                     {
-                        CurrentBatch2.Data.Add(CreateObjectRecord(csvType, csvReader.GetRecord<dynamic>()));
+                        if ((isEOF = csvReader.Read()) is not false)
+                        {
+                            CurrentBatch1.Data.Add(CreateObjectRecord(csvType, csvReader.GetRecord<dynamic>()));
+                        }
+                        else
+                        {
+                            return;
+                        }
                     }
+
+                    for (var i = 0; i <= batch_size; i++)
+                    {
+                        if ((isEOF = csvReader.Read()) is not false)
+                        {
+                            CurrentBatch2.Data.Add(CreateObjectRecord(csvType, csvReader.GetRecord<dynamic>()));
+                        }
+                    }
+
+                    Task<int> t1 = Sorts.InsertionSort(CurrentBatch1);
+                    Task<int> t2 = Sorts.InsertionSort(CurrentBatch2);
+                    var res = await Task.WhenAll(t1, t2);
+
+                    Task<int> merge = Sorts.Merge(CurrentBatch1, CurrentBatch2, MergedBatch);
+                    var res2 = await Task.WhenAll(merge);
+
+                    reader.Close();
+
+                    using var fstream = File.Create(CurrentFile.FullName + batch_size);
+                    using var writer = new StreamWriter(fstream);
+                    using var csvWriter = new CsvWriter(writer, CultureInfo.InvariantCulture);
+
+                    csvWriter.WriteRecords<dynamic>(MergedBatch.Data);
+
+                    CurrentFile = new FileInfo(CurrentFile.FullName + batch_size);
+                    batch_size *= 2;
                 }
             }
             catch(Exception ex)
