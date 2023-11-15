@@ -63,7 +63,14 @@ namespace Lab4.Models
             for(var i = 0; i < batch.Data.Count; i++)
             {
                 int minIdx = batch.Min();
+                
+                test.Add(batch.Data[minIdx]);
 
+
+                if (readers[minIdx].Read())
+                {
+
+                }
             }
            
         }
