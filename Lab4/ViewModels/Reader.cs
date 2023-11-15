@@ -100,7 +100,7 @@ namespace Lab4.ViewModels
                     pathes.Add(CurrentBatch.FullPath);
                 }
 
-                Sorts.GreatMerge(pathes);
+                Sorts.GreatMerge(pathes, CurrentBatch.RecordType);
             }
             catch(Exception ex)
             {
@@ -117,6 +117,7 @@ namespace Lab4.ViewModels
 
             bool isEOF = false;
             var csvType = GetType(csvReader);
+            batch.RecordType = csvType;
 
             batch.Data.Add(CreateObjectRecord(csvType, csvReader.GetRecord<dynamic>()));
             for (var i = 0; i < batchSize - 1; i++)

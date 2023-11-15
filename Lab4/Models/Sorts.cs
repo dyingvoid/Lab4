@@ -6,16 +6,13 @@ using System.Collections.Generic;
 using CsvHelper;
 using System.IO;
 using System.Globalization;
+using System;
+using System.Diagnostics;
 
 namespace Lab4.Models
 {
     internal class Sorts
     {
-        public static async void Sort(Batch<object> batch1, Batch<object> batch2)
-        {
-            
-        }
-
         public static async Task<int> Merge(Batch<object> batch1, Batch<object> batch2, Batch<object> mergeBatch)
         {
             var i = 0;
@@ -54,10 +51,39 @@ namespace Lab4.Models
             return 1;
         }
 
-        public static void GreatMerge(List<string> pathes)
+        public static void GreatMerge(List<string> pathes, Type type)
         {
             var readers = OpenStreams(pathes);
+            var test = new List<object>();
 
+            if (!TryRead(readers, type, out var batch))
+                return;
+            batch.RecordType = type;
+
+            for(var i = 0; i < batch.Data.Count; i++)
+            {
+                int minIdx = batch.Min();
+
+            }
+           
+        }
+
+        private static bool TryRead(List<CsvReader> readers, Type type, out Batch<object> batch)
+        {
+            var counter = 0;
+            batch = new Batch<object>();
+
+            foreach (var reader in readers)
+            {
+                if (!reader.Read())
+                    counter++;
+                else
+                    batch.Data.Add(CreateObjectRecord(type, reader.GetRecord<dynamic>()));
+            }
+
+            if (counter == readers.Count)
+                return false;
+            return true;
         }
 
         private static List<CsvReader> OpenStreams(List<string> pathes)
@@ -88,6 +114,17 @@ namespace Lab4.Models
             }
 
             return 1;
+        }
+
+        private static object CreateObjectRecord(Type objectType, dynamic record)
+        {
+            object dynamicObject = Activator.CreateInstance(objectType);
+
+            foreach (var data in record)
+                dynamicObject.GetType().GetProperty(data.Key).SetValue(dynamicObject, data.Value);
+
+
+            return dynamicObject;
         }
     }
 }

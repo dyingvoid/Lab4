@@ -2,7 +2,6 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
-using System.Security.Policy;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CsvHelper;
@@ -15,12 +14,27 @@ namespace Lab4.ViewModels
         public ObservableCollection<T> Data { get; set; }
         public ObservableCollection<Record> Log { get; set; }
         public string FullPath { get; set; }
+        public Type RecordType { get; set; }
 
 
         public Batch()
         {
             Data = new ObservableCollection<T>();
             Log = new ObservableCollection<Record>();
+        }
+
+        public int Min()
+        {
+            int min = 0;
+            for (int i = 0; i < Data.Count; i++)
+            {
+                if(IsBigger(min, i, "Age", RecordType, out var record))
+                {
+                    min = i;
+                }
+            }
+
+            return min;
         }
 
         public bool IsBigger(int i1, int i2, string property, Type type, out Record record)
