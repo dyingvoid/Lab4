@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Lab4.Models
 {
-    internal class Record : ISwapRecord, IMergeRecord
+    public class Record : ISwapRecord, IMergeRecord
     {
         public int RowIndex1 { get; set; }
         public int RowIndex2 { get; set; }

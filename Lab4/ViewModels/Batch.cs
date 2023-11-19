@@ -9,19 +9,12 @@ using Lab4.Models;
 
 namespace Lab4.ViewModels
 {
-    internal class Batch<T> : ObservableObject
+    public class Batch<T> : ObservableObject
     {
-        public ObservableCollection<T> Data { get; set; }
-        public ObservableCollection<Record> Log { get; set; }
-        public string FullPath { get; set; }
-        public Type RecordType { get; set; }
-
-
-        public Batch()
-        {
-            Data = new ObservableCollection<T>();
-            Log = new ObservableCollection<Record>();
-        }
+        public ObservableCollection<T> Data { get; set; } = new();
+        public ObservableCollection<Record> Log { get; set; } = new();
+        public string FullPath { get; set; } = string.Empty;
+        public Type? RecordType { get; set; } = null;
 
         public int Min()
         {

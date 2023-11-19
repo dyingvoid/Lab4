@@ -51,60 +51,10 @@ namespace Lab4.Models
             return 1;
         }
 
-        public static void GreatMerge(List<string> pathes, Type type)
+        public static void MultiPathMerge(List<string> pathes, Type type)
         {
-            var readers = OpenStreams(pathes);
-            var test = new List<object>();
-
-            if (!TryRead(readers, type, out var batch))
-                return;
-            batch.RecordType = type;
-
-            for(var i = 0; i < batch.Data.Count; i++)
-            {
-                int minIdx = batch.Min();
-                
-                test.Add(batch.Data[minIdx]);
-
-
-                if (readers[minIdx].Read())
-                {
-
-                }
-            }
-           
         }
-
-        private static bool TryRead(List<CsvReader> readers, Type type, out Batch<object> batch)
-        {
-            var counter = 0;
-            batch = new Batch<object>();
-
-            foreach (var reader in readers)
-            {
-                if (!reader.Read())
-                    counter++;
-                else
-                    batch.Data.Add(CreateObjectRecord(type, reader.GetRecord<dynamic>()));
-            }
-
-            if (counter == readers.Count)
-                return false;
-            return true;
-        }
-
-        private static List<CsvReader> OpenStreams(List<string> pathes)
-        {
-            var readers = new List<CsvReader>();
-            foreach (string path in pathes)
-            {
-                var reader = new StreamReader(path);
-                readers.Add(new CsvReader(reader, CultureInfo.InvariantCulture));
-            }
-
-            return readers;
-        }
-
+        
         public static async Task<int> InsertionSort(Batch<object> batch)
         {
             for (int i = 1; i < batch.Data.Count; i++)
