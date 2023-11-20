@@ -105,4 +105,13 @@ public class Connection
 
         return DataCreator.CreateType(typeDict);
     }
+
+    // For debug only
+    public void CheckTypes()
+    {
+        object? obj = null;
+        while((obj = ReadRecord()) != null)
+            if (obj.GetType() != CsvType)
+                throw new Exception("Wrong type");
+    }
 }

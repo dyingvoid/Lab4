@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CsvHelper;
@@ -115,6 +116,9 @@ namespace Lab4.ViewModels
             return batches;
         }
 
+        // Be careful with this, if record originally comes from different Batch objects
+        // this method might throw exception, because each Batch object actually creates its own
+        // record type, although types have same fields and properties, they are not the same.
         public void ToFile()
         {
             if (Data.Count == 0)
@@ -128,16 +132,20 @@ namespace Lab4.ViewModels
             Clear();
         }
 
-        public void TestToFile(Type type)
+        // Safe to use, but probably slower
+        // Difference is, we get type for each record
+        // With proper use, records are going to have same properties.
+        public void TestToFile()
         {
             if (Data.Count == 0)
                 throw new Exception("Batch is empty.");
+            if (RecordType is null)
+                throw new ArgumentNullException("RecordType");
             
             using var fStream = File.Create(FullPath);
             using var writer = new StreamWriter(fStream);
-            using var csvWriter = new CsvWriter(writer, CultureInfo.InvariantCulture);
             
-            csvWriter.WriteHeader(type);
+            WriteHeader(writer);
             foreach (var element in Data)
             {
                 var properties = element.GetType().GetProperties();
@@ -146,9 +154,16 @@ namespace Lab4.ViewModels
                     writer.Write(property.GetValue(element, null));
                     writer.Write(',');
                 }
-                writer.Write("\r\n");
+                writer.WriteLine();
             }
             Clear();
+        }
+
+        private void WriteHeader(StreamWriter writer)
+        {
+            var properties = RecordType.GetProperties();
+            var header = String.Join(",", properties.Select(property => property.Name));
+            writer.WriteLine(header);
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using Lab4.ViewModels;
 
 namespace Lab4.Models;
@@ -19,8 +18,12 @@ public class Merger
 
     public void MultiPathMerge(string propertyName, Type propertyType)
     {
-        var batch = new Batch<object>(){FullPath = @"C:\Users\Dying\RiderProjects\Lab4\Lab4\Files\Sorted.csv"};
-        
+        var batch = new Batch<object>()
+        {
+            FullPath = @"C:\Users\Dying\RiderProjects\Lab4\Lab4\Files\Sorted.csv",
+            RecordType = Connections[0].CsvType
+        };
+
         while (true)
         {
             ReadRecords();
@@ -28,8 +31,15 @@ public class Merger
                 break;
             batch.Data.Add(min);
         }
+
+        for (var i = 0; i < Values.Count; i++)
+        {
+            if (!Min(propertyName, propertyType, out var min))
+                break;
+            batch.Data.Add(min);
+        }
         
-        batch.TestToFile(Connections[0].CsvType);
+        batch.TestToFile();
     }
 
     public bool ReadRecords()
