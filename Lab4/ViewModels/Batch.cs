@@ -127,5 +127,28 @@ namespace Lab4.ViewModels
             csvWriter.WriteRecords(Data);
             Clear();
         }
+
+        public void TestToFile(Type type)
+        {
+            if (Data.Count == 0)
+                throw new Exception("Batch is empty.");
+            
+            using var fStream = File.Create(FullPath);
+            using var writer = new StreamWriter(fStream);
+            using var csvWriter = new CsvWriter(writer, CultureInfo.InvariantCulture);
+            
+            csvWriter.WriteHeader(type);
+            foreach (var element in Data)
+            {
+                var properties = element.GetType().GetProperties();
+                foreach (var property in properties)
+                {
+                    writer.Write(property.GetValue(element, null));
+                    writer.Write(',');
+                }
+                writer.Write("\r\n");
+            }
+            Clear();
+        }
     }
 }

@@ -66,9 +66,9 @@ namespace Lab4.Models
                 {
                     batch.Swap(j + 1, j, record);
                     j--;
-                    await Task.Delay(300);
+                    await Task.Delay(1);
                 }
-                await Task.Delay(200);
+                //await Task.Delay(200);
             }
 
             return 1;

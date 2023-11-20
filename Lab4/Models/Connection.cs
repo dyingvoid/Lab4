@@ -39,7 +39,7 @@ public class Connection
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Could not read file {csvFile.FullName}. {ex.Message}");
+            MessageBox.Show($"Could not read file {csvFile.FullName}.");
         }
     }
 

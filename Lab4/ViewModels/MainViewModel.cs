@@ -75,30 +75,25 @@ namespace Lab4.ViewModels
         }
         private async void ReadFile()
         {
-            try
+            int batchSize = 10;
+            int counter = 0;
+            var connection = new Connection(CurrentFile);
+            var filePathes = new List<string>();
+            while (true)
             {
-                int batchSize = 10;
-                int counter = 0;
-                var connection = new Connection(CurrentFile);
-                var filePathes = new List<string>();
-                while (true)
-                {
-                    var batch = connection.ReadBatch(batchSize);
-                    if (batch.Data.Count == 0)
-                        break;
-                    
-                    CurrentBatch = batch;
-                    var task = await Sorts.InsertionSort(batch, "Age", typeof(int));
-                    filePathes.Add(CurrentBatch.FullPath);
-                    CurrentBatch.ToFile();
-                }
+                var batch = connection.ReadBatch(batchSize);
+                if (batch.Data.Count == 0)
+                    break;
+                
+                CurrentBatch = batch;
+                var task = await Sorts.InsertionSort(batch, "Age", typeof(int));
+                filePathes.Add(CurrentBatch.FullPath);
+                CurrentBatch.ToFile();
+            }
 
-                var merger = new Merger(filePathes.ToArray());
-            }
-            catch(Exception ex)
-            {
-                MessageBox.Show(ex.StackTrace);
-            }
+            var merger = new Merger(filePathes.ToArray());
+            merger.MultiPathMerge("Age", typeof(int));
+            
         }
     }
 }
