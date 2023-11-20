@@ -55,13 +55,14 @@ namespace Lab4.Models
         {
         }
         
-        public static async Task<int> InsertionSort(Batch<object> batch)
+        public static async Task<int> InsertionSort(Batch<object> batch, string propertyName, Type propertyType)
         {
             for (int i = 1; i < batch.Data.Count; i++)
             {
                 int j = i - 1;
                 bool result;
-                while (j >= 0 && (result = batch.IsBigger(j, j+1, "Age", typeof(int), out var record)))
+                while (j >= 0 && 
+                       (result = batch.IsBigger(j, j+1, propertyName, propertyType, out var record)))
                 {
                     batch.Swap(j + 1, j, record);
                     j--;

@@ -117,6 +117,9 @@ namespace Lab4.ViewModels
 
         public void ToFile()
         {
+            if (Data.Count == 0)
+                throw new Exception("Batch is empty.");
+            
             using var fStream = File.Create(FullPath);
             using var writer = new StreamWriter(fStream);
             using var csvWriter = new CsvWriter(writer, CultureInfo.InvariantCulture);

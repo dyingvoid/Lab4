@@ -14,6 +14,14 @@ public class Connection
     public CsvReader? Reader { get; init; }
     public bool Status { get; private set; }
     public Type? CsvType { get; private set; }
+    public int Counter { get; private set; }
+
+    private object? _last;
+    public object? Last
+    {
+        get => _last;
+        set => _last = value;
+    }
 
     public Connection(FileInfo csvFile)
     {
@@ -26,6 +34,7 @@ public class Connection
                 throw new ArgumentException("No record in file.");
             
             CsvType = GetType(Reader);
+            Counter = 0;
             Status = true;
         }
         catch (Exception ex)
@@ -40,11 +49,11 @@ public class Connection
             Reader.Dispose();
     }
     
-    public Batch<object> ReadBatch(CsvReader csvReader, int batchSize, int counter)
+    public Batch<object> ReadBatch(int batchSize)
     {
         var batch = new Batch<object>
         {
-            FullPath = CsvFile.FullName + counter,
+            FullPath = CsvFile.FullName + Counter,
             RecordType = CsvType
         };
 
@@ -58,6 +67,7 @@ public class Connection
             batch.Data.Add(record);
         }
 
+        Counter++;
         return batch;
     }
 
