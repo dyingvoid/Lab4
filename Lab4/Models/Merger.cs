@@ -24,7 +24,7 @@ public class Merger
         ValuesStatuses = new List<bool>(new bool[Connections.Count]);
     }
 
-    public async void MultiPathMerge(string propertyName, Type propertyType)
+    public async Task MultiPathMerge(string propertyName, Type propertyType)
     {
         var batch = new Batch<object>()
         {
@@ -38,7 +38,7 @@ public class Merger
             if (!Min(propertyName, propertyType, out var min))
                 break;
             batch.Data.Add(min);
-            await Task.Delay(100);
+            await Task.Delay(10);
         }
         
         batch.ToFile();
@@ -59,7 +59,7 @@ public class Merger
                 }
             }
 
-            await Task.Delay(200);
+            await Task.Delay(10);
         }
     }
 
@@ -72,6 +72,14 @@ public class Merger
             var temp = min;
             min = min.Min(Connections[i].BufferedRecord, propertyName, propertyType);
 
+            if (temp != null && min != null)
+            {
+                Records.Add(new Record()
+                {
+                    RowIndex1 = i - 1,
+                    RowIndex2 = i
+                });
+            }
             // Check if min is updated
             if (temp != min)
                 minIndex = i;
@@ -81,8 +89,9 @@ public class Merger
         {
             Values.Remove(Connections[minIndex].BufferedRecord);
             Connections[minIndex].BufferedRecord = null;
+            Records.Add(new Record() {RowIndex1 = -1, RowIndex2 = -1, InsertedId = minIndex});
         }
-
+        
         return min is not null;
     }
 

@@ -62,9 +62,6 @@ namespace Lab4.ViewModels
         {
             OpenFileCommand = new RelayCommand(ReadFile, () => CanOpenFile);
             SortFileCommand = new RelayCommand(SortFile);
-
-            CurrentFile = new FileInfo(@"C:\Users\Dying\RiderProjects\Lab4\Lab4\Files\Test.csv");
-            ReadFile();
         }
 
         private async void SortFile()
@@ -74,7 +71,7 @@ namespace Lab4.ViewModels
         }
         private async void ReadFile()
         {
-            int batchSize = 10;
+            int batchSize = 5;
             var factory = new ConnectionFactory();
             var connection = factory.StartConnection(CurrentFile);
 
@@ -95,7 +92,7 @@ namespace Lab4.ViewModels
             }
 
             CsvMerger = new Merger(filePathes.ToArray());
-            CsvMerger.MultiPathMerge("Age", typeof(int));
+            await CsvMerger.MultiPathMerge("Age", typeof(int));
             
         }
     }
