@@ -93,7 +93,6 @@ namespace Lab4.ViewModels
 
             CsvMerger = new Merger(filePathes.ToArray());
             await CsvMerger.MultiPathMerge("Age", typeof(int));
-            
         }
     }
 }

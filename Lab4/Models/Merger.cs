@@ -42,6 +42,12 @@ public class Merger
         }
         
         batch.ToFile();
+        
+        foreach (var connection in Connections)
+        {
+            connection.Close();
+            connection.CsvFile.Delete();
+        }
         MessageBox.Show("End");
     }
 

@@ -31,8 +31,18 @@ public class Connection
 
     ~Connection()
     {
-        Stream.Dispose();
-        Reader.Dispose();
+        if (Stream is not null)
+            Stream.Dispose();
+        if (Reader is not null)
+            Reader.Dispose();
+    }
+
+    public void Close()
+    {
+        if (Stream is not null)
+            Stream.Dispose();
+        if (Reader is not null)
+            Reader.Dispose();
     }
     
     public Batch<object> ReadBatch(int batchSize)
