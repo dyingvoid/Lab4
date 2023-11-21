@@ -45,13 +45,16 @@ namespace Lab4.ViewModels
         public Batch<object> CurrentBatch 
         { 
             get => _currrentBatch;
-            set
-            {
-                SetProperty(ref _currrentBatch, value);
-            }
+            set => SetProperty(ref _currrentBatch, value);
         }
-        public Batch<object> MergedBatch { get; set; } = new Batch<object>();
-        
+
+        private Merger _csvMerger;
+
+        public Merger CsvMerger
+        {
+            get => _csvMerger;
+            set => SetProperty(ref _csvMerger, value);
+        }
         public RelayCommand OpenFileCommand { get; set; }
         public RelayCommand SortFileCommand { get; set; }
 
@@ -91,8 +94,8 @@ namespace Lab4.ViewModels
                 CurrentBatch.ToFile();
             }
 
-            var merger = new Merger(filePathes.ToArray());
-            merger.MultiPathMerge("Age", typeof(int));
+            CsvMerger = new Merger(filePathes.ToArray());
+            CsvMerger.MultiPathMerge("Age", typeof(int));
             
         }
     }

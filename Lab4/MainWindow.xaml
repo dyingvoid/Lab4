@@ -26,8 +26,8 @@
                 </StackPanel>
             </StackPanel>
             <StackPanel>
-                <DataGrid ItemsSource="{Binding MergedBatch.Data}"/>
-                <DataGrid ItemsSource="{Binding MergedBatch.Log}"/>
+                <DataGrid ItemsSource="{Binding CsvMerger.Values}"/>
+                <DataGrid ItemsSource="{Binding CsvMerger.Records}"/>
             </StackPanel>
         </StackPanel>
     </ScrollViewer>
