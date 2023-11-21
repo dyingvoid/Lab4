@@ -17,6 +17,7 @@ public class Connection
     public Type CsvType { get; set; }
     private int Counter { get; set; }
     private StreamReader Stream { get; set; }
+    public object? BufferedRecord { get; set; }
 
     public Connection(FileInfo csvFile)
     {

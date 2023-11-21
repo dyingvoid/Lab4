@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using Lab4.ViewModels;
@@ -48,13 +49,13 @@ public class Merger
     {
         for (var i = 0; i < Connections.Count; i++)
         {
-            if (!ValuesStatuses[i])
+            if (Connections[i].BufferedRecord is null)
             {
                 var record = Connections[i].ReadRecord();
                 if (record is not null)
                 {
+                    Connections[i].BufferedRecord = record;
                     Values.Add(record);
-                    ValuesStatuses[i] = true;
                 }
             }
 
@@ -66,19 +67,20 @@ public class Merger
     {
         min = null;
         int minIndex = -1;
-        for (int i = 0; i < Values.Count; i++)
+        for (int i = 0; i < Connections.Count; i++)
         {
             var temp = min;
-            min = min.Min(Values[i], propertyName, propertyType);
+            min = min.Min(Connections[i].BufferedRecord, propertyName, propertyType);
 
+            // Check if min is updated
             if (temp != min)
                 minIndex = i;
         }
 
         if (minIndex != -1)
         {
-            ValuesStatuses[minIndex] = false;
-            Values.RemoveAt(minIndex);
+            Values.Remove(Connections[minIndex].BufferedRecord);
+            Connections[minIndex].BufferedRecord = null;
         }
 
         return min is not null;
