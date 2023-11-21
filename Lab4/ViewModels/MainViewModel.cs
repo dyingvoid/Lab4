@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Threading.Tasks;
-using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CsvHelper;
 using Lab4.Models;
 
 namespace Lab4.ViewModels
@@ -76,8 +72,12 @@ namespace Lab4.ViewModels
         private async void ReadFile()
         {
             int batchSize = 10;
-            int counter = 0;
-            var connection = new Connection(CurrentFile);
+            var factory = new ConnectionFactory();
+            var connection = factory.StartConnection(CurrentFile);
+
+            if (connection is null)
+                return;
+            
             var filePathes = new List<string>();
             while (true)
             {

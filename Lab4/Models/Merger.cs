@@ -21,7 +21,7 @@ public class Merger
         var batch = new Batch<object>()
         {
             FullPath = @"C:\Users\Dying\RiderProjects\Lab4\Lab4\Files\Sorted.csv",
-            RecordType = Connections[0].CsvType
+            RecordType = SingleConnectionType.CsvType
         };
 
         while (true)
@@ -31,15 +31,8 @@ public class Merger
                 break;
             batch.Data.Add(min);
         }
-
-        for (var i = 0; i < Values.Count; i++)
-        {
-            if (!Min(propertyName, propertyType, out var min))
-                break;
-            batch.Data.Add(min);
-        }
         
-        batch.TestToFile();
+        batch.ToFile();
     }
 
     public bool ReadRecords()

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Threading;
 using System.Windows;
 using CsvHelper;
 using Lab4.ViewModels;
@@ -10,43 +11,27 @@ namespace Lab4.Models;
 
 public class Connection
 {
-    public FileInfo? CsvFile { get; init; }
-    public CsvReader? Reader { get; init; }
-    public bool Status { get; private set; }
-    public Type? CsvType { get; private set; }
-    public int Counter { get; private set; }
-
-    private object? _last;
-    public object? Last
-    {
-        get => _last;
-        set => _last = value;
-    }
+    public FileInfo CsvFile { get; init; }
+    public CsvReader Reader { get; init; }
+    public bool Status { get; set; }
+    public Type CsvType { get; set; }
+    private int Counter { get; set; }
+    private StreamReader Stream { get; set; }
 
     public Connection(FileInfo csvFile)
     {
         CsvFile = csvFile;
-        try
-        {
-            Reader = new CsvReader(new StreamReader(CsvFile.FullName), CultureInfo.InvariantCulture);
-            
-            if (!Reader.Read())
-                throw new ArgumentException("No record in file.");
-            
-            CsvType = GetType(Reader);
-            Counter = 0;
-            Status = true;
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Could not read file {csvFile.FullName}.");
-        }
+        Stream = new StreamReader(CsvFile.FullName);
+        Reader = new CsvReader(Stream, CultureInfo.InvariantCulture);
+        CsvType = SingleConnectionType.CsvType;
+        Counter = 0;
+        Status = true;
     }
 
     ~Connection()
     {
-        if(Reader is not null)
-            Reader.Dispose();
+        Stream.Dispose();
+        Reader.Dispose();
     }
     
     public Batch<object> ReadBatch(int batchSize)
@@ -57,7 +42,8 @@ public class Connection
             RecordType = CsvType
         };
 
-        for (var i = 0; i < batchSize - 1; i++)
+        var counter = 0;
+        while(counter < batchSize)
         {
             var record = ReadRecord();
             
@@ -65,6 +51,7 @@ public class Connection
                 break;
             
             batch.Data.Add(record);
+            counter++;
         }
 
         Counter++;
@@ -73,11 +60,6 @@ public class Connection
 
     public object? ReadRecord()
     {
-        if (Reader is null)
-        {
-            Status = false;
-            return null;
-        }
         if (Status == false || (Status = Reader.Read()) == false)
             return null;
 
@@ -93,19 +75,7 @@ public class Connection
         
         return dynamicObject;
     }
-
-    private Type GetType(CsvReader reader)
-    {
-        var record = reader.GetRecord<dynamic>();
-        var typeDict = new Dictionary<string, object>();
-
-        foreach (var data in record)
-            typeDict.TryAdd(data.Key, data.Value);
-
-
-        return DataCreator.CreateType(typeDict);
-    }
-
+    
     // For debug only
     public void CheckTypes()
     {
