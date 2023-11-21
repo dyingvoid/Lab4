@@ -16,6 +16,7 @@ namespace Lab4.ViewModels
         public ObservableCollection<Record> Log { get; set; } = new();
         public string FullPath { get; set; } = string.Empty;
         public Type? RecordType { get; set; } = null;
+        public int Counter { get; set; }
 
         public int Min()
         {
@@ -123,39 +124,14 @@ namespace Lab4.ViewModels
         {
             if (Data.Count == 0)
                 throw new Exception("Batch is empty.");
+            if (Counter > 100)
+                throw new Exception("Too many files");
             
             using var fStream = File.Create(FullPath);
             using var writer = new StreamWriter(fStream);
             using var csvWriter = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
             csvWriter.WriteRecords(Data);
-            Clear();
-        }
-
-        // Safe to use, but probably slower
-        // Difference is, we get type for each record
-        // With proper use, records are going to have same properties.
-        public void TestToFile()
-        {
-            if (Data.Count == 0)
-                throw new Exception("Batch is empty.");
-            if (RecordType is null)
-                throw new ArgumentNullException("RecordType");
-            
-            using var fStream = File.Create(FullPath);
-            using var writer = new StreamWriter(fStream);
-            
-            WriteHeader(writer);
-            foreach (var element in Data)
-            {
-                var properties = element.GetType().GetProperties();
-                foreach (var property in properties)
-                {
-                    writer.Write(property.GetValue(element, null));
-                    writer.Write(',');
-                }
-                writer.WriteLine();
-            }
             Clear();
         }
 

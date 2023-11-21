@@ -39,7 +39,8 @@ public class Connection
         var batch = new Batch<object>
         {
             FullPath = CsvFile.FullName + Counter,
-            RecordType = CsvType
+            RecordType = CsvType,
+            Counter = this.Counter
         };
 
         var counter = 0;
