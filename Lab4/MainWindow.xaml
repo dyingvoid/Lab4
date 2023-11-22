@@ -28,6 +28,8 @@
                 <TextBox Text="{Binding AsType,
                 ValidatesOnExceptions=True, UpdateSourceTrigger=PropertyChanged,
                 Converter={StaticResource STConverter}}"/>
+                <TextBlock>Parameter</TextBlock>
+                <TextBox Text="{Binding Parameter}"/>
             </StackPanel>
             <StackPanel>
                 <ListBox ItemsSource="{Binding CsvProperties}"

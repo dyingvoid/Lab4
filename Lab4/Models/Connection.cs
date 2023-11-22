@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using CsvHelper;
@@ -63,6 +64,41 @@ public class Connection
                 break;
             
             batch.Data.Add(record);
+            counter++;
+        }
+
+        Counter++;
+        return batch;
+    }
+
+    public Batch<object> ReadBatch(int batchSize, string parameter)
+    {
+        var batch = new Batch<object>
+        {
+            FullPath = CsvFile.FullName + Counter,
+            RecordType = CsvType,
+            Counter = this.Counter
+        };
+
+        var counter = 0;
+        while(counter < batchSize)
+        {
+            var record = ReadRecord();
+            
+            if (record is null)
+                break;
+
+            var properties = record.GetType().GetProperties().ToList();
+            bool hasProperty = false;
+            foreach (var property in properties)
+            {
+                var value = (string) record.GetProperty(property.Name, typeof(string));
+                if (value == parameter)
+                    hasProperty = true;
+            }
+            
+            if(hasProperty)
+                batch.Data.Add(record);
             counter++;
         }
 

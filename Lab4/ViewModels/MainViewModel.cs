@@ -146,6 +146,14 @@ namespace Lab4.ViewModels
             }
         }
 
+        private string _parameter;
+
+        public string Parameter
+        {
+            get => _parameter;
+            set => SetProperty(ref _parameter, value);
+        }
+
         public ObservableCollection<string> CsvProperties { get; set; } = new();
         public RelayCommand OpenFileCommand { get; set; }
         public RelayCommand SortFileCommand { get; set; }
@@ -197,8 +205,19 @@ namespace Lab4.ViewModels
         {
             while (true)
             {
-                var batch1 = CurrentConnection.ReadBatch(BatchSize);
-                var batch2 = CurrentConnection.ReadBatch(BatchSize);
+                Batch<object> batch1 = null;
+                Batch<object> batch2 = null;
+                
+                if (Parameter is null || Parameter.Length == 0)
+                {
+                    batch1 = CurrentConnection.ReadBatch(BatchSize);
+                    batch2 = CurrentConnection.ReadBatch(BatchSize);
+                }
+                else
+                {
+                    batch1 = CurrentConnection.ReadBatch(BatchSize, Parameter);
+                    batch2 = CurrentConnection.ReadBatch(BatchSize, Parameter);
+                }
 
                 if (batch1.Data.Count == 0 && batch2.Data.Count == 0)
                     break;
