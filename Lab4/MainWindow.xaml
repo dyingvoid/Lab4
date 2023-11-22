@@ -12,6 +12,7 @@
     </Window.DataContext>
     <Window.Resources>
         <vm:StringFileInfoConverter x:Key="SFIConverter"/>
+        <vm:StringTypeConverter x:Key="STConverter"/>
     </Window.Resources>
     <ScrollViewer>
         <StackPanel>
@@ -19,7 +20,20 @@
             UpdateSourceTrigger=PropertyChanged, Converter={StaticResource SFIConverter}}"/>
             <Button Content="Open file" Command="{Binding OpenFileCommand}"/>
             <Button Content="Sort file" Command="{Binding SortFileCommand}"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock>Property</TextBlock>
+                <TextBox Text="{Binding PropertyName,
+                ValidatesOnExceptions=True, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock>BatchSize</TextBlock>
+                <TextBox Text="{Binding BatchSize,
+                ValidatesOnExceptions=True, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock>Type</TextBlock>
+                <TextBox Text="{Binding AsType,
+                ValidatesOnExceptions=True, UpdateSourceTrigger=PropertyChanged,
+                Converter={StaticResource STConverter}}"/>
+            </StackPanel>
             <StackPanel>
+                <ListBox ItemsSource="{Binding CsvProperties}"/>
                 <StackPanel Orientation="Horizontal">
                     <DataGrid ItemsSource="{Binding CurrentBatch.Data}"/>
                     <DataGrid ItemsSource="{Binding CurrentBatch.Log}" />

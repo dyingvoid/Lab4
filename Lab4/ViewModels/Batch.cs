@@ -36,14 +36,9 @@ namespace Lab4.ViewModels
         {
             IComparable property1 = null;
             IComparable property2 = null;
-            try
-            {
-                property1 = (IComparable)GetProperty(i1, property, type);
-                property2 = (IComparable)GetProperty(i2, property, type);
-            } catch (Exception ex)
-            {
-                MessageBox.Show("Check selected column of csv file. Wrong type.");
-            }
+            
+            property1 = (IComparable)GetProperty(i1, property, type);
+            property2 = (IComparable)GetProperty(i2, property, type);
 
             record = new Record() { RowIndex1 = i1, RowIndex2 = i2 };
             Log.Add(record);

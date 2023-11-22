@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Lab4.Models;
@@ -40,12 +43,65 @@ namespace Lab4.ViewModels
             }
         }
 
+        private bool _canSortFile;
+
+        public bool CanSortFile
+        {
+            get => _canSortFile;
+            set
+            {
+                if (CurrentConnection is not null &&
+                    PropertyName is not null &&
+                    AsType is not null &&
+                    BatchSize > 1)
+                    _canSortFile = true;
+                else
+                    _canSortFile = false;
+                
+                SortFileCommand.NotifyCanExecuteChanged();
+            }
+        }
+
         private Batch<object> _currrentBatch;
 
         public Batch<object> CurrentBatch 
         { 
             get => _currrentBatch;
             set => SetProperty(ref _currrentBatch, value);
+        }
+
+        private Connection? _currentConnection;
+
+        public Connection? CurrentConnection
+        {
+            get => _currentConnection;
+            set
+            {
+                SetProperty(ref _currentConnection, value);
+                CanSortFile = true;
+            }
+        }
+
+        private string? _propertyName;
+
+        public string? PropertyName
+        {
+            get => _propertyName;
+            set
+            {
+                var properties = SingleConnectionType.CsvType
+                    .GetProperties()
+                    .Select(property => property.Name)
+                    .ToList();
+                if (!properties.Contains(value))
+                {
+                    CanSortFile = false;
+                    throw new ArgumentException("No such property");
+                }
+
+                CanSortFile = true;
+                SetProperty(ref _propertyName, value);
+            }
         }
 
         private Merger _csvMerger;
@@ -55,40 +111,89 @@ namespace Lab4.ViewModels
             get => _csvMerger;
             set => SetProperty(ref _csvMerger, value);
         }
+
+        private int _batchSize;
+        public int BatchSize
+        {
+            get => _batchSize;
+            set
+            {
+                if (value <= 1)
+                {
+                    CanSortFile = false;
+                    throw new ArgumentException("Size must be more than 1");
+                }
+                
+                CanSortFile = true;
+                SetProperty(ref _batchSize, value);
+            }
+        }
+
+        private Type? _asType;
+        public Type? AsType
+        {
+            get => _asType;
+            set
+            {
+                if (value is null)
+                {
+                    CanSortFile = false;
+                    throw new ArgumentException("Wrong type");
+                }
+
+                CanSortFile = true;
+                SetProperty(ref _asType, value);
+            }
+        }
+
+        public ObservableCollection<string> CsvProperties { get; set; } = new();
         public RelayCommand OpenFileCommand { get; set; }
         public RelayCommand SortFileCommand { get; set; }
 
         public MainViewModel()
         {
-            OpenFileCommand = new RelayCommand(ReadFile, () => CanOpenFile);
-            SortFileCommand = new RelayCommand(SortFile);
+            OpenFileCommand = new RelayCommand(OpenFile, () => CanOpenFile);
+            SortFileCommand = new RelayCommand(SortFile, () => CanSortFile);
         }
 
+        private void OpenFile()
+        {
+            var factory = new ConnectionFactory();
+            CurrentConnection = factory.StartConnection(CurrentFile);
+            
+            SingleConnectionType.CsvType
+                .GetProperties()
+                .Select(property => property.Name)
+                .ToList()
+                .ForEach(name => CsvProperties.Add(name));
+            
+            CanSortFile = true;
+        }
+        
         private async void SortFile()
         {
-            //Task<int> t1 = Sorts.InsertionSort(CurrentBatch);
-            //var res = await Task.WhenAll(t1);
-        }
-        private async void ReadFile()
-        {
-            int batchSize = 5;
-            var factory = new ConnectionFactory();
-            var connection = factory.StartConnection(CurrentFile);
-
-            if (connection is null)
+            if (CurrentConnection is null)
                 return;
             
             var filePathes = new List<string>();
-            while (true)
+            try
             {
-                var batch = connection.ReadBatch(batchSize);
-                if (batch.Data.Count == 0)
-                    break;
-                
-                CurrentBatch = batch;
-                var task = await Sorts.InsertionSort(batch, "Age", typeof(int));
-                filePathes.Add(CurrentBatch.FullPath);
-                CurrentBatch.ToFile();
+                while (true)
+                {
+                    var batch = CurrentConnection.ReadBatch(BatchSize);
+                    if (batch.Data.Count == 0)
+                        break;
+
+                    CurrentBatch = batch;
+                    var task = await Sorts.InsertionSort(batch, PropertyName, AsType);
+                    filePathes.Add(CurrentBatch.FullPath);
+                    CurrentBatch.ToFile();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return;
             }
 
             CsvMerger = new Merger(filePathes.ToArray());
