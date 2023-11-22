@@ -33,8 +33,12 @@
                 <ListBox ItemsSource="{Binding CsvProperties}"
                          SelectedItem="{Binding PropertyName}"/>
                 <StackPanel Orientation="Horizontal">
-                    <DataGrid ItemsSource="{Binding CurrentBatch.Data}"/>
-                    <DataGrid ItemsSource="{Binding CurrentBatch.Log}" />
+                    <DataGrid ItemsSource="{Binding CurrentBatch1.Data}"/>
+                    <DataGrid ItemsSource="{Binding CurrentBatch1.Log}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <DataGrid ItemsSource="{Binding CurrentBatch2.Data}"/>
+                    <DataGrid ItemsSource="{Binding CurrentBatch2.Log}" />
                 </StackPanel>
             </StackPanel>
             <StackPanel>

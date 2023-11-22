@@ -22,11 +22,12 @@ namespace Lab4.Models
                 while (j >= 0 && 
                        (result = batch.IsBigger(j, j+1, propertyName, propertyType, out var record)))
                 {
+                    await Task.Delay(500);
                     batch.Swap(j + 1, j, record);
                     j--;
                     await Task.Delay(1);
                 }
-                //await Task.Delay(200);
+                await Task.Delay(500);
             }
 
             return 1;

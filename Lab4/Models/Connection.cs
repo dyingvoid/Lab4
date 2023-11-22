@@ -74,7 +74,7 @@ public class Connection
     {
         if (Status == false || (Status = Reader.Read()) == false)
             return null;
-
+        
         return CreateObjectRecord(Reader.GetRecord<dynamic>());
     }
 

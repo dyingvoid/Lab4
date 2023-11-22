@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -64,12 +65,18 @@ namespace Lab4.ViewModels
             }
         }
 
-        private Batch<object> _currrentBatch;
-
-        public Batch<object> CurrentBatch 
+        private Batch<object> _currrentBatch1;
+        public Batch<object> CurrentBatch1 
         { 
-            get => _currrentBatch;
-            set => SetProperty(ref _currrentBatch, value);
+            get => _currrentBatch1;
+            set => SetProperty(ref _currrentBatch1, value);
+        }
+        
+        private Batch<object> _currrentBatch2;
+        public Batch<object> CurrentBatch2 
+        { 
+            get => _currrentBatch2;
+            set => SetProperty(ref _currrentBatch2, value);
         }
 
         private Connection? _currentConnection;
@@ -84,8 +91,15 @@ namespace Lab4.ViewModels
             }
         }
 
-        private string? _propertyName;
+        private Merger _csvMerger;
 
+        public Merger CsvMerger
+        {
+            get => _csvMerger;
+            set => SetProperty(ref _csvMerger, value);
+        }
+        
+        private string? _propertyName;
         public string? PropertyName
         {
             get => _propertyName;
@@ -94,14 +108,6 @@ namespace Lab4.ViewModels
                 SetProperty(ref _propertyName, value);
                 CanSortFile = true;
             }
-        }
-
-        private Merger _csvMerger;
-
-        public Merger CsvMerger
-        {
-            get => _csvMerger;
-            set => SetProperty(ref _csvMerger, value);
         }
 
         private int _batchSize;
@@ -173,17 +179,7 @@ namespace Lab4.ViewModels
             var filePathes = new List<string>();
             try
             {
-                while (true)
-                {
-                    var batch = CurrentConnection.ReadBatch(BatchSize);
-                    if (batch.Data.Count == 0)
-                        break;
-
-                    CurrentBatch = batch;
-                    var task = await Sorts.InsertionSort(batch, PropertyName, AsType);
-                    filePathes.Add(CurrentBatch.FullPath);
-                    CurrentBatch.ToFile();
-                }
+                await AsyncInsertionSort(filePathes);
             }
             catch (Exception ex)
             {
@@ -195,6 +191,46 @@ namespace Lab4.ViewModels
             await CsvMerger.MultiPathMerge(PropertyName, AsType);
 
             OpenFile();
+        }
+
+        private async Task AsyncInsertionSort(List<string> filePathes)
+        {
+            while (true)
+            {
+                var batch1 = CurrentConnection.ReadBatch(BatchSize);
+                var batch2 = CurrentConnection.ReadBatch(BatchSize);
+
+                if (batch1.Data.Count == 0 && batch2.Data.Count == 0)
+                    break;
+
+                CurrentBatch1 = batch1;
+                CurrentBatch2 = batch2;
+
+                if (CurrentBatch1.Data.Count != 0 && CurrentBatch2.Data.Count != 0)
+                {
+                    var task1 = Sorts.InsertionSort(CurrentBatch1, PropertyName, AsType);
+                    var task2 = Sorts.InsertionSort(CurrentBatch2, PropertyName, AsType);
+
+                    var res = await Task.WhenAll(task1, task2);
+                    filePathes.Add(CurrentBatch1.FullPath);
+                    filePathes.Add(CurrentBatch2.FullPath);
+
+                    CurrentBatch1.ToFile();
+                    CurrentBatch2.ToFile();
+                }
+                else if (CurrentBatch1.Data.Count != 0)
+                {
+                    var task = await Sorts.InsertionSort(batch1, PropertyName, AsType);
+                    filePathes.Add(CurrentBatch1.FullPath);
+                    CurrentBatch1.ToFile();
+                }
+                else
+                {
+                    var task = await Sorts.InsertionSort(batch2, PropertyName, AsType);
+                    filePathes.Add(CurrentBatch2.FullPath);
+                    CurrentBatch2.ToFile();
+                }
+            }
         }
     }
 }
