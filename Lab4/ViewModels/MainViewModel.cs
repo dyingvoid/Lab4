@@ -12,7 +12,7 @@ namespace Lab4.ViewModels
 {
     internal class MainViewModel : ObservableObject
     {
-        private FileInfo _file;
+        private FileInfo? _file;
         public FileInfo? CurrentFile
         {
             get => _file;
@@ -21,6 +21,7 @@ namespace Lab4.ViewModels
                 if (value is null)
                 {
                     CanOpenFile = false;
+                    SetProperty(ref _file, value);
                     throw new ArgumentNullException("File path is wrong");
                 }
 
@@ -53,7 +54,8 @@ namespace Lab4.ViewModels
                 if (CurrentConnection is not null &&
                     PropertyName is not null &&
                     AsType is not null &&
-                    BatchSize > 1)
+                    BatchSize > 1 &&
+                    CanOpenFile)
                     SetProperty(ref _canSortFile, true);
                 else
                     SetProperty(ref _canSortFile, false);
@@ -153,6 +155,7 @@ namespace Lab4.ViewModels
             var factory = new ConnectionFactory();
             CurrentConnection = factory.StartConnection(CurrentFile);
             
+            CsvProperties.Clear();
             SingleConnectionType.CsvType
                 .GetProperties()
                 .Select(property => property.Name)
@@ -189,7 +192,9 @@ namespace Lab4.ViewModels
             }
 
             CsvMerger = new Merger(filePathes.ToArray());
-            await CsvMerger.MultiPathMerge("Age", typeof(int));
+            await CsvMerger.MultiPathMerge(PropertyName, AsType);
+
+            OpenFile();
         }
     }
 }

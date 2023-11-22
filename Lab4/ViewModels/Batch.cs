@@ -122,11 +122,20 @@ namespace Lab4.ViewModels
             if (Counter > 100)
                 throw new Exception("Too many files");
             
+            
             using var fStream = File.Create(FullPath);
             using var writer = new StreamWriter(fStream);
             using var csvWriter = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
-            csvWriter.WriteRecords(Data);
+            try
+            {
+                csvWriter.WriteRecords(Data);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
             Clear();
         }
 
