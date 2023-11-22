@@ -1,13 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Lab4.ViewModels;
-using Lab4.Models;
-using System.Windows.Documents;
-using System.Collections.Generic;
-using CsvHelper;
-using System.IO;
-using System.Globalization;
 using System;
-using System.Diagnostics;
 
 namespace Lab4.Models
 {
