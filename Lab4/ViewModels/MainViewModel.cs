@@ -54,9 +54,9 @@ namespace Lab4.ViewModels
                     PropertyName is not null &&
                     AsType is not null &&
                     BatchSize > 1)
-                    _canSortFile = true;
+                    SetProperty(ref _canSortFile, true);
                 else
-                    _canSortFile = false;
+                    SetProperty(ref _canSortFile, false);
                 
                 SortFileCommand.NotifyCanExecuteChanged();
             }
@@ -89,18 +89,8 @@ namespace Lab4.ViewModels
             get => _propertyName;
             set
             {
-                var properties = SingleConnectionType.CsvType
-                    .GetProperties()
-                    .Select(property => property.Name)
-                    .ToList();
-                if (!properties.Contains(value))
-                {
-                    CanSortFile = false;
-                    throw new ArgumentException("No such property");
-                }
-
-                CanSortFile = true;
                 SetProperty(ref _propertyName, value);
+                CanSortFile = true;
             }
         }
 
@@ -120,6 +110,7 @@ namespace Lab4.ViewModels
             {
                 if (value <= 1)
                 {
+                    SetProperty(ref _batchSize, 0);
                     CanSortFile = false;
                     throw new ArgumentException("Size must be more than 1");
                 }
@@ -137,6 +128,7 @@ namespace Lab4.ViewModels
             {
                 if (value is null)
                 {
+                    SetProperty(ref _asType, value);
                     CanSortFile = false;
                     throw new ArgumentException("Wrong type");
                 }
