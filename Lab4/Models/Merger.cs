@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using CsvHelper;
 using Lab4.ViewModels;
 
 namespace Lab4.Models;
@@ -22,6 +23,65 @@ public class Merger
         Values = new ObservableCollection<object>();
         Records = new ObservableCollection<Record>();
         ValuesStatuses = new List<bool>(new bool[Connections.Count]);
+    }
+
+    public void ExternalMerge(FileInfo? file, string name, Type type)
+    {
+        if (!file.Exists)
+            return;
+
+        var connectionFactory = new ConnectionFactory();
+        var connection = connectionFactory.StartConnection(file);
+        if (connection is null)
+            return;
+
+        var files = InitialSetUp(connection);
+    }
+
+    private string Merge(List<string> files)
+    {
+        while (files.Count > 1)
+        {
+            var newFiles = new List<string>();
+            
+            for (var i = 0; i < files.Count; i += 2)
+            {
+                if (i + 1 < files.Count)
+                    newFiles.Add(MergeTwoFiles(files[i], files[i + 1]));
+                else
+                    newFiles.Add(files[i]);
+            }
+
+            files = newFiles;
+        }
+
+        return files[0];
+    }
+
+    private string MergeTwoFiles(string file1, string file2)
+    {
+        
+    }
+
+    private List<string> InitialSetUp(Connection connection)
+    {
+        object? record = null;
+        int counter = 0;
+        string filesDirectory = @"C:\\Users\\Dying\\RiderProjects\\Lab4\\Lab4\\Files";
+        var files = new List<string>();
+
+        while ((record = connection.ReadRecord()) != null || counter < 200)
+        {
+            string path = $@"{filesDirectory}\{counter}.csv";
+            using var streamWriter = File.AppendText(path);
+            using var csvStream = new CsvWriter(streamWriter, CultureInfo.InvariantCulture);
+            csvStream.WriteRecord(record);
+            files.Add(path);
+
+            counter++;
+        }
+
+        return files;
     }
 
     public async Task MultiPathMerge(string propertyName, Type propertyType)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace Lab4.Models
@@ -44,6 +45,15 @@ namespace Lab4.Models
             if (result is 0 or -1)
                 return record;
             return other;
+        }
+
+        public static void RemoveRangeAt<T>(this List<T> list, ICollection<int> indexes)
+        {
+            foreach (var index in indexes)
+            {
+                if(index > 0 && index < list.Count)
+                    list.RemoveAt(index);
+            }
         }
     }
 }
