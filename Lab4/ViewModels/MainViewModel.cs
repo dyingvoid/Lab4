@@ -161,7 +161,7 @@ namespace Lab4.ViewModels
         public MainViewModel()
         {
             OpenFileCommand = new RelayCommand(OpenFile, () => CanOpenFile);
-            SortFileCommand = new RelayCommand(SortFile, () => CanSortFile);
+            SortFileCommand = new RelayCommand(Test, () => CanSortFile);
         }
 
         private void OpenFile()

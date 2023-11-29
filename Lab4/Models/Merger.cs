@@ -43,6 +43,7 @@ public class Merger
         var files = InitialSetUp(connection);
         var sortedFile = await Merge(files, name, type);
         File.Move(sortedFile.FullName, $@"{sortedFile.DirectoryName}\sorted.csv");
+        MessageBox.Show("End");
     }
 
     private async Task<FileInfo> Merge(List<FileInfo> files, string name, Type type)
@@ -71,8 +72,8 @@ public class Merger
 
     private async Task<FileInfo?> MergeTwoFiles(FileInfo file1, FileInfo file2, string name, Type type)
     {
-        var connections = 
-            OpenConnections(new string[] {file1.FullName, file2.FullName});
+        Connections = OpenConnections(new string[] {file1.FullName, file2.FullName});
+        ValuesStatuses = new List<bool>(new bool[Connections.Count]);
         string directory = @"C:\Users\Dying\RiderProjects\Lab4\Lab4\Files";
         string fileName = $@"{directory}\{file1.Name + file2.Name}";
         await using var streamWriter = File.AppendText(fileName);
@@ -85,13 +86,16 @@ public class Merger
             if (!Min(name, type, out var min))
                 break;
             
-            csvWriter.WriteRecord(min);
+            csvWriter.WriteRecords(new object[] { min });
         }
         
         foreach (var connection in Connections)
         {
             connection.Close();
+            connection.CsvFile.Delete();
         }
+
+        Connections.Clear();
 
         if (fileName.Length > 0)
             fileInfo = new FileInfo(fileName);
@@ -106,12 +110,12 @@ public class Merger
         string filesDirectory = @"C:\\Users\\Dying\\RiderProjects\\Lab4\\Lab4\\Files";
         var files = new List<FileInfo>();
 
-        while ((record = connection.ReadRecord()) != null || counter < 200)
+        while ((record = connection.ReadRecord()) != null && counter < 200)
         {
             string path = $@"{filesDirectory}\{counter}.csv";
             using var streamWriter = File.AppendText(path);
             using var csvStream = new CsvWriter(streamWriter, CultureInfo.InvariantCulture);
-            csvStream.WriteRecord(record);
+            csvStream.WriteRecords(new object[] {record});
             files.Add(new FileInfo(path));
 
             counter++;
