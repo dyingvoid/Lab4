@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using CsvHelper;
@@ -30,7 +31,7 @@ public class Merger
         ValuesStatuses = new List<bool>(new bool[Connections.Count]);
     }
 
-    public async void ExternalMerge(FileInfo? file, string name, Type type)
+    public async void ExternalMerge(FileInfo? file, string name, Type type, string parameter)
     {
         if (file is not null && !file.Exists)
             return;
@@ -40,10 +41,29 @@ public class Merger
         if (connection is null)
             return;
 
-        var files = InitialSetUp(connection);
+        var files = InitialSetUp(connection, parameter);
         var sortedFile = await Merge(files, name, type);
-        File.Move(sortedFile.FullName, $@"{sortedFile.DirectoryName}\sorted.csv");
+        File.Move(sortedFile.FullName, 
+            MoveExists($@"{sortedFile.DirectoryName}\sorted.csv"));
         MessageBox.Show("End");
+    }
+
+    private string MoveExists(string fullPath)
+    {
+        int count = 1;
+
+        string fileNameOnly = Path.GetFileNameWithoutExtension(fullPath);
+        string extension = Path.GetExtension(fullPath);
+        string path = Path.GetDirectoryName(fullPath);
+        string newFullPath = fullPath;
+
+        while(File.Exists(newFullPath)) 
+        {
+            string tempFileName = string.Format("{0}({1})", fileNameOnly, count++);
+            newFullPath = Path.Combine(path, tempFileName + extension);
+        }
+
+        return newFullPath;
     }
 
     private async Task<FileInfo> Merge(List<FileInfo> files, string name, Type type)
@@ -103,7 +123,7 @@ public class Merger
         return fileInfo;
     }
 
-    private List<FileInfo> InitialSetUp(Connection connection)
+    private List<FileInfo> InitialSetUp(Connection connection, string parameter)
     {
         object? record;
         int counter = 0;
@@ -113,6 +133,10 @@ public class Merger
         while ((record = connection.ReadRecord()) != null && counter < 200)
         {
             string path = $@"{filesDirectory}\{counter}.csv";
+
+            if (parameter.Length == 0 || !MatchesParameter(parameter, record))
+                continue;
+            
             using var streamWriter = File.AppendText(path);
             using var csvStream = new CsvWriter(streamWriter, CultureInfo.InvariantCulture);
             csvStream.WriteRecords(new object[] {record});
@@ -122,6 +146,22 @@ public class Merger
         }
 
         return files;
+    }
+
+    private static bool MatchesParameter(string parameter, object record)
+    {
+        var properties = record.GetType().GetProperties().ToList();
+        bool hasProperty = false;
+        foreach (var property in properties)
+        {
+            var value = (string) record.GetProperty(property.Name, typeof(string));
+            if (value == parameter)
+            {
+                hasProperty = true;
+            }
+        }
+
+        return hasProperty;
     }
 
     public async Task MultiPathMerge(string propertyName, Type propertyType)

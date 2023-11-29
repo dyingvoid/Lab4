@@ -181,8 +181,8 @@ namespace Lab4.ViewModels
 
         private async void Test()
         {
-            var merger = new Merger();
-            merger.ExternalMerge(CurrentFile, PropertyName, AsType);
+            CsvMerger = new Merger();
+            CsvMerger.ExternalMerge(CurrentFile, PropertyName, AsType, Parameter);
         }
         
         private async void SortFile()
