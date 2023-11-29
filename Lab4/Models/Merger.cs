@@ -17,17 +17,22 @@ public class Merger
     public ObservableCollection<Record> Records { get; set; }
     private List<bool> ValuesStatuses { get; set; }
 
-    public Merger(string[] fileNames)
+    public Merger()
     {
-        Connections = OpenConnections(fileNames);
         Values = new ObservableCollection<object>();
         Records = new ObservableCollection<Record>();
+        Connections = new();
+        ValuesStatuses = new();
+    }
+    public Merger(string[] fileNames) : this()
+    {
+        Connections = OpenConnections(fileNames);
         ValuesStatuses = new List<bool>(new bool[Connections.Count]);
     }
 
-    public void ExternalMerge(FileInfo? file, string name, Type type)
+    public async void ExternalMerge(FileInfo? file, string name, Type type)
     {
-        if (!file.Exists)
+        if (file is not null && !file.Exists)
             return;
 
         var connectionFactory = new ConnectionFactory();
@@ -36,18 +41,24 @@ public class Merger
             return;
 
         var files = InitialSetUp(connection);
+        var sortedFile = await Merge(files, name, type);
+        File.Move(sortedFile.FullName, $@"{sortedFile.DirectoryName}\sorted.csv");
     }
 
-    private string Merge(List<string> files)
+    private async Task<FileInfo> Merge(List<FileInfo> files, string name, Type type)
     {
         while (files.Count > 1)
         {
-            var newFiles = new List<string>();
+            var newFiles = new List<FileInfo>();
             
             for (var i = 0; i < files.Count; i += 2)
             {
                 if (i + 1 < files.Count)
-                    newFiles.Add(MergeTwoFiles(files[i], files[i + 1]));
+                {
+                    var result = await MergeTwoFiles(files[i], files[i + 1], name, type);
+                    if(result is not null)
+                        newFiles.Add(result);
+                }
                 else
                     newFiles.Add(files[i]);
             }
@@ -58,17 +69,42 @@ public class Merger
         return files[0];
     }
 
-    private string MergeTwoFiles(string file1, string file2)
+    private async Task<FileInfo?> MergeTwoFiles(FileInfo file1, FileInfo file2, string name, Type type)
     {
+        var connections = 
+            OpenConnections(new string[] {file1.FullName, file2.FullName});
+        string directory = @"C:\Users\Dying\RiderProjects\Lab4\Lab4\Files";
+        string fileName = $@"{directory}\{file1.Name + file2.Name}";
+        await using var streamWriter = File.AppendText(fileName);
+        await using var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture);
+        FileInfo? fileInfo = null;
         
+        while (true)
+        {
+            await ReadRecords();
+            if (!Min(name, type, out var min))
+                break;
+            
+            csvWriter.WriteRecord(min);
+        }
+        
+        foreach (var connection in Connections)
+        {
+            connection.Close();
+        }
+
+        if (fileName.Length > 0)
+            fileInfo = new FileInfo(fileName);
+
+        return fileInfo;
     }
 
-    private List<string> InitialSetUp(Connection connection)
+    private List<FileInfo> InitialSetUp(Connection connection)
     {
-        object? record = null;
+        object? record;
         int counter = 0;
         string filesDirectory = @"C:\\Users\\Dying\\RiderProjects\\Lab4\\Lab4\\Files";
-        var files = new List<string>();
+        var files = new List<FileInfo>();
 
         while ((record = connection.ReadRecord()) != null || counter < 200)
         {
@@ -76,7 +112,7 @@ public class Merger
             using var streamWriter = File.AppendText(path);
             using var csvStream = new CsvWriter(streamWriter, CultureInfo.InvariantCulture);
             csvStream.WriteRecord(record);
-            files.Add(path);
+            files.Add(new FileInfo(path));
 
             counter++;
         }
@@ -174,5 +210,13 @@ public class Merger
         }
 
         return connections;
+    }
+
+    private void CloseDeleteConnections(ICollection<Connection> connections)
+    {
+        foreach (var connection in connections)
+        {
+            connection.Close();
+        }
     }
 }

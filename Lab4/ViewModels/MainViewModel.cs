@@ -178,6 +178,12 @@ namespace Lab4.ViewModels
             
             CanSortFile = true;
         }
+
+        private async void Test()
+        {
+            var merger = new Merger();
+            merger.ExternalMerge(CurrentFile, PropertyName, AsType);
+        }
         
         private async void SortFile()
         {
