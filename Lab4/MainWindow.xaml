@@ -20,6 +20,7 @@
             UpdateSourceTrigger=PropertyChanged, Converter={StaticResource SFIConverter}}"/>
             <Button Content="Open file" Command="{Binding OpenFileCommand}"/>
             <Button Content="Sort file" Command="{Binding SortFileCommand}"/>
+            <Button Content="RofloSort" Command="{Binding RofloSort}"/>
             <StackPanel Orientation="Horizontal">
                 <TextBlock>BatchSize</TextBlock>
                 <TextBox Text="{Binding BatchSize,

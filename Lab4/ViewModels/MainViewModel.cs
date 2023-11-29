@@ -62,6 +62,7 @@ namespace Lab4.ViewModels
                     SetProperty(ref _canSortFile, false);
                 
                 SortFileCommand.NotifyCanExecuteChanged();
+                RofloSort.NotifyCanExecuteChanged();
             }
         }
 
@@ -157,10 +158,12 @@ namespace Lab4.ViewModels
         public ObservableCollection<string> CsvProperties { get; set; } = new();
         public RelayCommand OpenFileCommand { get; set; }
         public RelayCommand SortFileCommand { get; set; }
+        public RelayCommand RofloSort { get; set; }
 
         public MainViewModel()
         {
             OpenFileCommand = new RelayCommand(OpenFile, () => CanOpenFile);
+            RofloSort = new RelayCommand(SortFile, () => CanSortFile);
             SortFileCommand = new RelayCommand(Test, () => CanSortFile);
         }
 
